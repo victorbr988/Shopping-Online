@@ -13,28 +13,41 @@
 <body>
   <header class="header">
     <h1>Shopping Online</h1>
+    
+    
   </header>
   <main>
     <div class="userData">
+
       <section class="inputs">
         <input type="text" id="search-items" placeholder="Busque um produto" maxlength="14">
         <label >Máximo de 14 carácteres</label>
       </section>
+
       <section>
         <button id="search">Search</button>
       </section>
+
+      <section class="cart-container">
+        <p class="count-Intems">0</p>
+        <img class="cart-icon" src="./icons/icon-cart.png" alt="imagem de um carrinho de compras que tem a cor verde">
+      </section>
+
     </div>
-    <section class="space_products">
-      <div id="products"></div>
-      <section class="carts">
+    <section class="content">
+      <section class="space_products">
+        <div id="products"></div>
+      </section>
+      <div class="carts">
         <div class="cart-items">
           <ol class="items"></ol>
         </div>
         <div class="cleanCart">
           <button class="clear">Esvaziar carrinho</button>
         </div>
-      </section>
+      </div>
     </section>
+    
     
   </main>
   <script src="./script.js"></script>

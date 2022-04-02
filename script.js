@@ -1,15 +1,30 @@
 const getOl = document.querySelector('.items');
+const getInput = document.querySelector('#search-items');
+let itemLocalStorage = [];
+// função que apaga todos os itens retornados da API
+function deleteSections() {
+  const getSections = document.querySelector('#products');
+  getSections.innerHTML = ''
+}
 
+// função que adiciona novamente os itens da API
+function addSections() {
+  const getSectionFather = document.querySelector('.space_products');
+  const createDiv = document.createElement('div')
+  createDiv.id = 'products';
+  getSectionFather.appendChild(createDiv);
+}
 // função que pega os dados digitados pelo usuário e passa como parâmetro para requisição da API
-const getButtonSearch = document.querySelector('#search');
-
-getButtonSearch.addEventListener('click', () => {
-  const getInput = document.querySelector('#search-items').value;
-  getInfoProducts(getInput);
-  getInput.innerHTML = '';
-  
-});
-
+function addValueInputInApiRequest() {
+  const getButtonSearch = document.querySelector('#search');
+  getButtonSearch.addEventListener('click', () => {
+    deleteSections();
+    addSections();
+    getInfoProducts(getInput.value);
+    getInput.value = '';
+  });
+}
+addValueInputInApiRequest();
 // preciso pegar os items da API
 function requestAPI(search) {
   const API_URL = fetch(`https://api.mercadolibre.com/sites/MLB/search?q=${search}`)
@@ -38,7 +53,6 @@ async function getInfoProducts(search) {
   removeLoading()
   const getInfoItems = products.results;
   getInfoItems.forEach((item) => createElementItems(item));
-  return products;
 }
 getInfoProducts();
 // preciso fazer uma função que cria elementos para facilitar
@@ -58,7 +72,7 @@ function createElementsHTML(element, classe, content) {
 function handleClick(item) {
   item.remove();
 }
-// preciso adicionar o item ao carrinho quando clico no botão de adicionar
+// função que adiciona o item ao carrinho quando clica no botão de adicionar
 function addItemInCart(image, name, price) {
   const createLi = document.createElement('li', 'item_cart')
   createLi.style.padding = '1rem';
@@ -74,19 +88,59 @@ function addItemInCart(image, name, price) {
   
   getOl.appendChild(createLi);
 }
-// preciso criar os elementos que serão adicionado na tela após a requisição da API
+// função que cria os elementos que serão adicionado na tela após a requisição da API
 function createElementItems({id, thumbnail, price, title}) {
   const getFatherItems = document.querySelector('#products');
   const createSection = document.createElement('section');
   createSection.className = 'section';
   const button = createElementsHTML('button', 'button', 'Adicionar ao carrinho');
-  button.addEventListener('click', () => addItemInCart(thumbnail, title, price));
 
+  button.addEventListener('click', () => {
+    addItemInCart(thumbnail, title, price)
+    itemLocalStorage.push({id, thumbnail, price, title});
+    localStorage.setItem('cartProduct', JSON.stringify(itemLocalStorage));
+  });
 
   createSection.appendChild(createElementsHTML('span', 'id', id))
   createSection.appendChild(createImageItem(thumbnail));
   createSection.appendChild(createElementsHTML('p', 'title', title))
   createSection.appendChild(createElementsHTML('h4', 'price', `R$ ${price}`))
   createSection.appendChild(button);
+  
   getFatherItems.appendChild(createSection);
 };
+
+//função que deleta todos os itens dentro do carrinho de compras
+function deleteALLItemsCart() {
+  const buttonClearItemsCart = document.querySelector('.clear');
+  buttonClearItemsCart.addEventListener('click', () => getOl.innerHTML = '');
+}
+deleteALLItemsCart();
+
+// função que mostra e esconde o carrinho de compras ao clicar no ícone do carrinho 
+function cartVisible() {
+  const getIconCart = document.querySelector('.cart-icon');
+  getIconCart.addEventListener('click', () => {
+    const getCartItems = document.querySelector('.carts');
+    if(getCartItems.style.display === 'none') getCartItems.style.display = 'block';
+    else getCartItems.style.display = 'none';
+  })
+}
+cartVisible();
+
+// função que conta a quantidade de itens dentro do carrinho 
+function countItemsInCart() {
+  const getElementP = document.querySelector('.count-Intems');
+  if(getElementP.innerHTML > 0) {
+    getElementP.style.color = 'red';
+  }
+}
+countItemsInCart();
+function onloadPage() {
+  if(localStorage.getItem('cartProducts') !== null) {
+    itemLocalStorage = JSON.parse(localStorage.getItem('cartProduct'));
+    console.log(itemLocalStorage);
+  }
+}
+
+window.onload = () => { onloadPage(); }
