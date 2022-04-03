@@ -23,6 +23,9 @@ header {
 header h1 {
   color: white;
 }
+header img {
+  margin-right: 1rem;
+}
 main {
   padding: 1rem;
   height: 100%;
@@ -85,6 +88,9 @@ main .cart-container p {
   text-align: center;
   color: green;
   font-size: 1.3rem;
+}
+main .cart-container > p {
+  margin: 0 1rem;
 }
 main .cart-container {
   display: flex;
@@ -153,6 +159,14 @@ grid-template-columns: repeat(3, 19rem); */
 .space_products .cleanCart button:hover{
   background-color: blue;
 }
+.interactive {
+  display: flex;
+  margin-right: 10px;
+}
+.interactive img {
+  width: 35px;
+  height: 35px;
+}
 .space_products section.section {
   align-items: center;
   width: 270px;
@@ -209,4 +223,7 @@ button.btn {
   color: rgb(25, 25, 182);
   background-color: white;
   cursor: pointer;
+}
+span {
+  display: none;
 }

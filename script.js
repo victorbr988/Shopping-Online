@@ -1,6 +1,11 @@
 const getOl = document.querySelector('.items');
 const getInput = document.querySelector('#search-items');
 let itemLocalStorage = [];
+const priceTotal = document.querySelector('#total-price');
+
+function saveProducsInLocalStorage() {
+  localStorage.setItem('cartProduct', JSON.stringify(itemLocalStorage));
+}
 // função que apaga todos os itens retornados da API
 function deleteSections() {
   const getSections = document.querySelector('#products');
@@ -25,6 +30,7 @@ function addValueInputInApiRequest() {
   });
 }
 addValueInputInApiRequest();
+
 // preciso pegar os items da API
 function requestAPI(search) {
   const API_URL = fetch(`https://api.mercadolibre.com/sites/MLB/search?q=${search}`)
@@ -32,6 +38,7 @@ function requestAPI(search) {
   .then((data) => data);
   return API_URL;
 }
+
 // adicionando texto de carregamento enquanto é feita a requisiçao da API
 function addloading() {
   const createSectionLoading = document.createElement('section');
@@ -41,11 +48,13 @@ function addloading() {
   getMain.appendChild(createSectionLoading);
   return createSectionLoading;
 }
+
 // função que remove o elemento que contém a mensagem carregando
 function removeLoading() {
   const getElement = document.querySelector('.loading');
   getElement.remove();
 }
+
 // preciso pegar somente as informações dos produtos
 async function getInfoProducts(search) {
   addloading()
@@ -55,6 +64,7 @@ async function getInfoProducts(search) {
   getInfoItems.forEach((item) => createElementItems(item));
 }
 getInfoProducts();
+
 // preciso fazer uma função que cria elementos para facilitar
 function createImageItem(url) {
   const createImage = document.createElement('img');
@@ -62,6 +72,8 @@ function createImageItem(url) {
   createImage.setAttribute('src', url);
   return createImage
 }
+
+// função que cria os elementos HTML
 function createElementsHTML(element, classe, content) {
   const create = document.createElement(element);
   create.className = classe;
@@ -71,18 +83,27 @@ function createElementsHTML(element, classe, content) {
 // função que é executada após clicar em um dos items do carrinho
 function handleClick(item) {
   item.remove();
+  const idProduct = item.firstChild.innerHTML;
+  const missingProducts = itemLocalStorage.filter(({ id }) => id === idProduct);
+  const indexElement = missingProducts.indexOf(itemLocalStorage);
+  itemLocalStorage.splice(indexElement, 1);
+  saveProducsInLocalStorage();
+  sumPriceItems();
 }
 // função que adiciona o item ao carrinho quando clica no botão de adicionar
-function addItemInCart(image, name, price) {
+function addItemInCart({id, thumbnail, price, title}) {
   const createLi = document.createElement('li', 'item_cart')
   createLi.style.padding = '1rem';
 
   const createButton = createElementsHTML('button', 'btn', 'X')
-  createButton.addEventListener('click', () => handleClick(createLi));
+  createButton.addEventListener('click', () => {
+    handleClick(createLi)
+    countItemsInCart();
+  });
 
-  
-  createLi.appendChild(createImageItem(image));
-  createLi.appendChild(createElementsHTML('p', 'cart_item', name))
+  createLi.appendChild(createElementsHTML('span', 'cart_item', id));
+  createLi.appendChild(createImageItem(thumbnail));
+  createLi.appendChild(createElementsHTML('p', 'cart_item', title));
   createLi.appendChild(createButton);
   createLi.appendChild(createElementsHTML('h3', 'cart_item', `R$ ${price}`))
   
@@ -96,9 +117,11 @@ function createElementItems({id, thumbnail, price, title}) {
   const button = createElementsHTML('button', 'button', 'Adicionar ao carrinho');
 
   button.addEventListener('click', () => {
-    addItemInCart(thumbnail, title, price)
+    addItemInCart({ thumbnail, title, price, id })
     itemLocalStorage.push({id, thumbnail, price, title});
-    localStorage.setItem('cartProduct', JSON.stringify(itemLocalStorage));
+    saveProducsInLocalStorage();
+    countItemsInCart();
+    sumPriceItems();
   });
 
   createSection.appendChild(createElementsHTML('span', 'id', id))
@@ -113,7 +136,15 @@ function createElementItems({id, thumbnail, price, title}) {
 //função que deleta todos os itens dentro do carrinho de compras
 function deleteALLItemsCart() {
   const buttonClearItemsCart = document.querySelector('.clear');
-  buttonClearItemsCart.addEventListener('click', () => getOl.innerHTML = '');
+  buttonClearItemsCart.addEventListener('click', () => {
+    getOl.innerHTML = '';
+    countItemsInCart()
+    localStorage.removeItem('cartProduct');
+    sumPriceItems();
+    localStorage.removeItem('Sum');
+    priceTotal.innerHTML = 'Total: R$ 00,00';
+    
+  });
 }
 deleteALLItemsCart();
 
@@ -130,17 +161,30 @@ cartVisible();
 
 // função que conta a quantidade de itens dentro do carrinho 
 function countItemsInCart() {
+  const totalCart = getOl.childElementCount;
   const getElementP = document.querySelector('.count-Intems');
-  if(getElementP.innerHTML > 0) {
-    getElementP.style.color = 'red';
-  }
-}
-countItemsInCart();
-function onloadPage() {
-  if(localStorage.getItem('cartProducts') !== null) {
-    itemLocalStorage = JSON.parse(localStorage.getItem('cartProduct'));
-    console.log(itemLocalStorage);
-  }
+  getElementP.style.color = 'green'
+  getElementP.innerHTML = totalCart;
+  if(getElementP.innerHTML > 0) getElementP.style.color = 'red';
 }
 
+// função soma os valores dos produtos
+function sumPriceItems() {
+  const sum  = itemLocalStorage.reduce((acc, currenty) => acc + currenty.price, 0);
+  priceTotal.innerHTML = `
+  Total : ${sum.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'})}`;
+  localStorage.setItem('Sum', sum.toFixed(2));
+}
+
+// função que é chamada quando a página é recarregada
+function onloadPage() {
+  if(localStorage.getItem('cartProduct') !== null) {
+    itemLocalStorage = JSON.parse(localStorage.getItem('cartProduct'));
+    itemLocalStorage.forEach((element) => addItemInCart(element));
+    countItemsInCart();
+    const getSum = Number(localStorage.getItem('Sum'));
+    priceTotal.innerHTML = `
+    Total : ${getSum.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'})}`;
+  }
+}
 window.onload = () => { onloadPage(); }
