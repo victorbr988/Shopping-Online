@@ -82,13 +82,13 @@ function createElementsHTML(element, classe, content) {
 }
 // função que é executada após clicar em um dos items do carrinho
 function handleClick(item) {
-  item.remove();
   const idProduct = item.firstChild.innerHTML;
-  const missingProducts = itemLocalStorage.filter(({ id }) => id === idProduct);
-  const indexElement = missingProducts.indexOf(itemLocalStorage);
+  const missingProducts = itemLocalStorage.find(({ id }) => id === idProduct);
+  const indexElement = itemLocalStorage.indexOf(missingProducts);
   itemLocalStorage.splice(indexElement, 1);
   saveProducsInLocalStorage();
-  sumPriceItems();
+  item.remove();
+  subPrices();
 }
 // função que adiciona o item ao carrinho quando clica no botão de adicionar
 function addItemInCart({id, thumbnail, price, title}) {
@@ -143,7 +143,6 @@ function deleteALLItemsCart() {
     sumPriceItems();
     localStorage.removeItem('Sum');
     priceTotal.innerHTML = 'Total: R$ 00,00';
-    
   });
 }
 deleteALLItemsCart();
@@ -175,6 +174,13 @@ function sumPriceItems() {
   Total : ${sum.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'})}`;
   localStorage.setItem('Sum', sum.toFixed(2));
 }
+
+function subPrices() {
+  const sum  = Math.abs(itemLocalStorage.reduce((acc, currenty) => acc - currenty.price, 0));
+  priceTotal.innerHTML = `
+  Total : ${sum.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'})}`;
+  localStorage.setItem('Sum', sum.toFixed(2));
+};
 
 // função que é chamada quando a página é recarregada
 function onloadPage() {
