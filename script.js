@@ -139,9 +139,11 @@ function deleteALLItemsCart() {
   buttonClearItemsCart.addEventListener('click', () => {
     getOl.innerHTML = '';
     countItemsInCart()
+    localStorage.clear()
     localStorage.removeItem('cartProduct');
     sumPriceItems();
     localStorage.removeItem('Sum');
+    itemLocalStorage = []
     priceTotal.innerHTML = 'Total: R$ 00,00';
   });
 }
